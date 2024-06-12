@@ -1,8 +1,17 @@
 from SpimiIndexer import SPIMIIndexer
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 import time
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Permite solicitudes desde el front-end
+    allow_credentials=True,
+    allow_methods=["*"],  # Permite todos los métodos HTTP
+    allow_headers=["*"],  # Permite todos los encabezados
+)
 
 indexer = None
 posible_extra_features = ["track_artist", "lyrics", "track_popularity", "track_album_id", "track_album_name", "track_album_release_date", "playlist_name", "playlist_id", "playlist_genre",

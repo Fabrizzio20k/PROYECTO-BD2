@@ -37,7 +37,7 @@ def create_index(data: dict):
     indexer = SPIMIIndexer(
         csv_path='csv/' + data['csv_path'], block_size=data['block_size'])
     total_time = time.time() - total_time
-    return {"message": "Index created successfully", "time": total_time}
+    return {"message": "Index created successfully", "time": total_time, "status": 200}
 
 
 @app.post("/search")
@@ -45,20 +45,20 @@ def search(data: dict):
     extra_features = None
 
     if indexer is None:
-        return {"message": "Index not created"}
+        return {"message": "Index not created", "status": 404}
 
     if 'query' not in data:
-        return {"message": "query is required"}
+        return {"message": "query is required", "status": 400}
 
     if 'k' not in data:
-        return {"message": "k is required"}
+        return {"message": "k is required", "status": 400}
 
     if 'additional_features' in data:
         extra_features = data['additional_features']
         for feature in extra_features:
             if feature not in posible_extra_features:
-                return {"message": f"Feature {feature} is not valid"}
+                return {"message": f"Feature {feature} is not valid", "status": 400}
 
     result = indexer.retrieve_top_k(
         data['query'], data['k'], additional_features=extra_features)
-    return {"result": result}
+    return {"result": result, "message": "Search completed successfully", "status": 200}

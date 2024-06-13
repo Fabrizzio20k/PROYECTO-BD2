@@ -7,21 +7,15 @@ import Loader from '@/components/Loader';
 import { Toaster, toast } from 'sonner';
 import IndexCreation from '@/types/IndexCreation';
 import SearchData from '@/interfaces/SearchData';
+import Song from '@/types/Song';
 
 const api = "http://localhost:8000/";
 
-
-type Song = {
-    track_name: string;
-    extra_features?: Record<string, string>;
-}
-
 const features = [
-    "track_artist", "lyrics", "track_popularity", "track_album_id", "track_album_name",
-    "track_album_release_date", "playlist_name", "playlist_id", "playlist_genre",
-    "playlist_subgenre", "danceability", "energy", "key", "loudness", "mode",
-    "speechiness", "acousticness", "instrumentalness", "liveness", "valence", "tempo",
-    "duration_ms", "language"
+    "track_artist", "lyrics", "track_album_name",
+    "track_album_release_date", "playlist_name", "playlist_genre",
+    "playlist_subgenre", "danceability", "energy", "loudness",
+    "speechiness", "acousticness", "instrumentalness", "liveness", "valence", "tempo", "language"
 ];
 
 export default function Page() {
@@ -80,16 +74,16 @@ export default function Page() {
     };
 
     return (
-        <main className="flex min-h-screen bg-gray-900 text-white">
+        <main className="flex min-h-screen bg-gray-900 text-white min-w-[350px]">
             <Toaster richColors />
             {loading &&
                 <div className='absolute top-0 left-0 w-full h-full bg-black bg-opacity-90 flex items-center justify-center'>
                     <Loader />
                 </div>
             }
-            <div className='flex flex-row gap-4 w-full p-8'>
+            <div className='flex gap-4 w-full p-8 flex-col md:flex-row'>
                 {!createdIndex && (
-                    <div className="bg-gray-800 p-8 rounded shadow-md w-1/2">
+                    <div className="bg-gray-800 p-8 rounded shadow-md w-full md:w-1/2">
                         <h1 className="text-2xl font-bold mb-6 text-center">Index Creation</h1>
                         <form onSubmit={handleSubmit(handleCreateIndex)}>
                             <div className="mb-4">
@@ -127,18 +121,11 @@ export default function Page() {
                                     Create Index
                                 </button>
                             </div>
-                            {executionTime > 0 && (
-                                <div className="mt-4 p-4 bg-gray-800 rounded-md shadow-inner text-gray-300">
-                                    <pre className="text-xs text-green-400">
-                                        Execution Time: {executionTime} ms
-                                    </pre>
-                                </div>
-                            )}
                         </form>
                     </div>
                 )}
                 {createdIndex && (
-                    <div className="bg-gray-800 p-8 rounded shadow-md w-1/2">
+                    <div className="bg-gray-800 p-8 rounded shadow-md w-full md:w-1/2">
                         <h1 className="text-2xl font-bold mb-6 text-center">Search your favorite songs 🎵</h1>
                         <form onSubmit={handleSearchSubmit(handleSearch)}>
                             <div className="mb-4">
@@ -176,10 +163,11 @@ export default function Page() {
                                                 className="h-4 w-4 text-indigo-600 border-gray-600 bg-gray-700 rounded focus:ring-indigo-500"
                                                 {...registerSearch("additional_features")}
                                             />
-                                            <label className="ml-2 block text-sm font-medium text-gray-300">
+                                            <label className="ml-2 block text-sm font-medium text-gray-300 break-all whitespace-normal">
                                                 {feature}
                                             </label>
                                         </div>
+
                                     ))}
                                 </div>
                             </div>
@@ -191,10 +179,17 @@ export default function Page() {
                                     Search
                                 </button>
                             </div>
+                            {executionTime > 0 && (
+                                <div className="mt-4 p-4 bg-gray-950 rounded-md shadow-inner text-gray-300">
+                                    <pre className="text-xs text-green-400">
+                                        Execution Time: {executionTime.toFixed(5)} ms
+                                    </pre>
+                                </div>
+                            )}
                         </form>
                     </div>
                 )}
-                <div className="bg-gray-800 p-8 rounded shadow-md w-1/2">
+                <div className="bg-gray-800 p-8 rounded shadow-md w-full md:w-1/2">
                     {!createdIndex && (
                         <div className='h-full flex justify-center items-center'>
                             <h1 className="text-2xl font-bold mb-6 text-center">Why not create an index first? 🦎</h1>

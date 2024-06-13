@@ -60,7 +60,6 @@ export default function Page() {
                     return song;
                 });
                 setSongs(songs_retrieved);
-                console.log(songs_retrieved);
                 toast.success("Search completed successfully");
             } else {
                 toast.error("An error occurred while searching");

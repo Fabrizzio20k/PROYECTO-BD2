@@ -73,14 +73,14 @@ export default function Page() {
     };
 
     return (
-        <main className="flex min-h-screen bg-gray-900 text-white min-w-[350px]">
+        <main className="flex min-h-screen bg-gray-900 text-white min-w-[350px] justify-center">
             <Toaster richColors />
             {loading &&
                 <div className='absolute top-0 left-0 w-full h-full bg-black bg-opacity-90 flex items-center justify-center'>
                     <Loader />
                 </div>
             }
-            <div className='flex gap-4 w-full p-8 flex-col md:flex-row'>
+            <div className='flex gap-4 w-full p-8 flex-col md:flex-row max-w-[1920px]'>
                 {!createdIndex && (
                     <div className="bg-gray-800 p-8 rounded shadow-md w-full md:w-1/2">
                         <h1 className="text-2xl font-bold mb-6 text-center">Index Creation</h1>

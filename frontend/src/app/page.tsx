@@ -181,7 +181,7 @@ export default function Page() {
                             {executionTime > 0 && (
                                 <div className="mt-4 p-4 bg-gray-950 rounded-md shadow-inner text-gray-300">
                                     <pre className="text-xs text-green-400">
-                                        Execution Time: {executionTime.toFixed(5)} ms
+                                        Execution Time: {Number(executionTime.toFixed(8))*1000} ms
                                     </pre>
                                 </div>
                             )}

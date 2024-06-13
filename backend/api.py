@@ -1,5 +1,5 @@
 from SpimiIndexer import SPIMIIndexer
-from fastapi import FastAPI
+from    fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import time
 
@@ -55,6 +55,8 @@ def search(data: dict):
 
     if 'additional_features' in data:
         extra_features = data['additional_features']
+        if isinstance(extra_features, bool):
+            extra_features = []
         for feature in extra_features:
             if feature not in posible_extra_features:
                 return {"message": f"Feature {feature} is not valid", "status": 400}

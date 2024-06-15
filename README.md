@@ -103,6 +103,9 @@ La interfaz gráfica de usuario (GUI) permite interactuar con el índice inverti
 #### Creación del Índice Invertido
 ![Creación del Índice Invertido](assets/create_index.png)
 
+#### Consulta de Texto Libre
+![Consulta de Texto Libre](assets/query.png)
+
 ### Análisis Comparativo Visual con Otras Implementaciones
 Comparación visual del rendimiento y precisión entre la implementación propia y las realizadas con PostgreSQL.
 

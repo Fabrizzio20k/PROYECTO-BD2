@@ -73,7 +73,7 @@ export default function Page() {
     };
 
     return (
-        <main className="flex min-h-screen bg-gray-900 text-white min-w-[350px] justify-center">
+        <main className="flex h-screen bg-gray-900 text-white min-w-[350px] justify-center ">
             <Toaster richColors />
             {loading &&
                 <div className='absolute top-0 left-0 w-full h-full bg-black bg-opacity-90 flex items-center justify-center'>
@@ -93,7 +93,12 @@ export default function Page() {
                                 >
                                     <option value="">Select CSV File</option>
                                     <option value="spotify_songs.csv">spotify_songs.csv</option>
-                                    <option value="default.csv">default.csv</option>
+                                    <option value="spotify_songs_1000.csv">spotify_songs_1000.csv</option>
+                                    <option value="spotify_songs_2000.csv">spotify_songs_2000.csv</option>
+                                    <option value="spotify_songs_4000.csv">spotify_songs_4000.csv</option>
+                                    <option value="spotify_songs_8000.csv">spotify_songs_8000.csv</option>
+                                    <option value="spotify_songs_16000.csv">spotify_songs_16000.csv</option>
+                                    <option value="spotify_songs_25000.csv">spotify_songs_25000.csv</option>
                                 </select>
                                 {errors.csv_path && <p className="mt-2 text-sm text-red-500">{errors.csv_path.message}</p>}
                             </div>
@@ -181,7 +186,7 @@ export default function Page() {
                             {executionTime > 0 && (
                                 <div className="mt-4 p-4 bg-gray-950 rounded-md shadow-inner text-gray-300">
                                     <pre className="text-xs text-green-400">
-                                        Execution Time: {Number(executionTime.toFixed(8))*1000} ms
+                                        Execution Time: {Number(executionTime.toFixed(8)) * 1000} ms
                                     </pre>
                                 </div>
                             )}

@@ -71,33 +71,63 @@ Este proceso garantiza que las consultas se ejecuten de manera eficiente y que l
 ## Frontend
 
 ### Diseño de la GUI
-La interfaz gráfica de usuario (GUI) permite interactuar con el índice invertido a través de las siguientes funcionalidades:
+La interfaz gráfica de usuario (GUI) permite interactuar con el índice invertido mediante su creación, consulta y presentación de resultados. La GUI se desarrolló utilizando el framework de React.js y se comunica con el servidor backend a través de una API REST.
+
+#### Al crear el indice invertido
+
+- **Carga de Datos**: Permite al usuario cargar un archivo CSV que contiene los datos de las canciones.
+- **Selección del número de bloques**: El usuario puede especificar la cantidad de bloques en los que se dividirá el índice invertido.
+
+#### Después de crear el indice invertido
 
 - **Campo de Consulta**: Permite al usuario ingresar una consulta en lenguaje natural.
 - **Selección de Top-K**: El usuario puede especificar la cantidad de documentos a recuperar.
 - **Presentación de Resultados**: Los resultados se muestran de manera amigable, incluyendo el tiempo de respuesta de la consulta.
 
 ### Mini-manual de Usuario
+
+#### Al crear el indice invertido
+
+1. **Cargar Datos**: Haga clic en el botón "Cargar Datos" y seleccione un archivo CSV que contenga los datos de las canciones.
+2. **Especificar Bloques**: Ingrese el número de bloques en los que desea dividir el índice invertido.
+
+#### Al realizar una consulta
+
 1. **Ingresar la Consulta**: Escriba la consulta en el campo de texto.
 2. **Especificar Top-K**: Seleccione la cantidad de documentos a recuperar.
 3. **Seleccion atributos extra**: Seleccione los atributos extra que desea mostrar en los resultados.
 4. **Ver Resultados**: Los resultados aparecerán en la pantalla, mostrando la información relevante de las canciones junto con la similitud de coseno y el tiempo de consulta.
 
 ### Screenshots de la GUI
-(Screenshots deben ser añadidos aquí una vez disponibles)
+
+#### Creación del Índice Invertido
+![Creación del Índice Invertido](assets/create_index.png)
 
 ### Análisis Comparativo Visual con Otras Implementaciones
-Comparación visual del rendimiento y precisión entre la implementación propia y las realizadas con PostgreSQL y MongoDB.
+Comparación visual del rendimiento y precisión entre la implementación propia y las realizadas con PostgreSQL.
 
 ## Experimentación
 
 ### Tablas y Gráficos de los Resultados Experimentales
-Se realizaron pruebas con diferentes tamaños de dataset (N = 1000, 2000, 4000, 8000, 16000, 32000, 64000). A continuación se presentan las tablas y gráficos con los resultados obtenidos.
+Se realizaron pruebas con diferentes tamaños de dataset (N = 1000, 2000, 4000, 8000, 16000, 25000). A continuación se presentan las tablas y gráficos con los resultados obtenidos.
 
-| N     | SPIMI INDEX Time (s) | PostgreSQL Time (s) |
-|-------|-------------------|---------------------|
-| 1000  | 0               | 0                 |
-| 2000  | 0               | 0                |
+#### Tiempo de Creación del Índice Invertido
+
+| N     | SPIMI INDEX Time (ms) | PostgreSQL Time (ms) |
+|-------|-----------------------|----------------------|
+| 1000  | 0              | 0                    |
+| 2000  |  0            | 0                |
+| 4000  | 0             | 0                 |
+| 8000  | 0              | 0                |
+| 16000 | 0               | 0                 |
+| 25000 | 0               | 0                |
+
+#### Tiempo de Ejecución de Consultas (Top-K = 10)
+
+| N     | SPIMI INDEX Time (ms) | PostgreSQL Time (ms) |
+|-------|-----------------------|----------------------|
+| 1000  |  0                | 0                 |
+| 2000  |  0                | 0                |
 | 4000  | 0             | 0                 |
 | 8000  | 0              | 0                |
 | 16000 | 0               | 0                 |

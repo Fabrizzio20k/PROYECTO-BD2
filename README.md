@@ -10,20 +10,59 @@ El dataset utilizado proviene de Kaggle y contiene datos sobre canciones de Spot
 ## Backend: Índice Invertido
 
 ### Construcción del Índice Invertido en Memoria Secundaria
-La construcción del índice invertido se realiza en bloques utilizando el algoritmo SPIMI (Single-pass in-memory indexing). El proceso se detalla a continuación:
 
-1. **Tokenización y Preprocesamiento**: Se tokenizan las letras de las canciones, eliminando stopwords y aplicando stemming.
-2. **Creación de Bloques**: Los documentos se procesan en bloques manejables y se construye un diccionario temporal para cada bloque.
-3. **Guardado de Bloques**: Cada bloque se guarda en la memoria secundaria como un archivo temporal.
-4. **Fusión de Bloques**: Los bloques temporales se fusionan para crear el índice invertido final.
+1. **Inicialización**:
+   - Se carga el dataset que contiene las letras de las canciones y los metadatos de las mismas.
+   - Se define el tamaño de los bloques, el directorio temporal para almacenar los índices parciales y el archivo final donde se guardará el índice invertido completo.
+
+2. **Preprocesamiento del Texto**:
+   - **Tokenización**: Se divide el texto en palabras individuales (tokens).
+   - **Eliminación de Stopwords**: Se eliminan las palabras comunes que no aportan significado significativo, tanto en español como en inglés. Tambien se eliminan los signos de puntuación.
+   - **Stemming**: Se reduce cada palabra a su raíz, dependiendo del idioma detectado (español o inglés).
+
+3. **Procesamiento en Bloques**:
+   - Los documentos se procesan en bloques de un tamaño predefinido.
+   - Para cada bloque, se crea un diccionario temporal donde cada término (palabra) se asocia con una lista de documentos en los que aparece junto con su frecuencia de aparición.
+
+4. **Cálculo de Normas de Documentos**:
+   - Para cada documento, se calcula la norma (longitud) del documento sumando los cuadrados de las frecuencias de los términos y tomando la raíz cuadrada del resultado.
+
+5. **Almacenamiento Temporal**:
+   - Cada bloque procesado se guarda como un archivo temporal en el directorio designado.
+   - Los archivos temporales contienen el diccionario de términos y las normas de los documentos correspondientes al bloque.
+
+6. **Fusión de Bloques**:
+   - Los archivos temporales se cargan y se fusionan en un solo índice invertido.
+   - Se utiliza una estructura de datos de tipo heap para ordenar y combinar las listas de postings de cada término de los diferentes bloques.
+   - Las normas de los documentos también se combinan y se recalculan si es necesario.
+
+7. **Índice Final**:
+   - El índice invertido final, que contiene los términos, las listas de documentos asociados y las normas de los documentos, se guarda en un archivo en la memoria secundaria.
 
 ### Ejecución Óptima de Consultas Aplicando Similitud de Coseno
-La similitud de coseno se utiliza para medir la relevancia de los documentos con respecto a una consulta. Esto se realiza mediante los siguientes pasos:
 
-1. **Preprocesamiento de la Consulta**: La consulta se tokeniza, se eliminan stopwords y se aplica stemming.
-2. **Cálculo de Pesos TF-IDF**: Se calculan los pesos TF-IDF para los términos de la consulta y los documentos.
-3. **Cálculo de Similitud de Coseno**: Se calcula la similitud de coseno entre la consulta y cada documento utilizando los pesos TF-IDF normalizados.
-4. **Recuperación de Documentos**: Se retornan los documentos con mayor similitud a la consulta, ordenados por relevancia.
+1. **Preprocesamiento de la Consulta**:
+   - La consulta ingresada por el usuario se tokeniza, se eliminan las stopwords y se aplica stemming, siguiendo el mismo proceso que para los documentos.
+
+2. **Cálculo de Pesos TF-IDF para la Consulta**:
+   - Se calcula el peso TF-IDF para cada término de la consulta. TF (Term Frequency) es la frecuencia del término en la consulta, e IDF (Inverse Document Frequency) se calcula en función de la cantidad de documentos en los que aparece el término.
+
+3. **Normalización del Vector de la Consulta**:
+   - Se calcula la norma del vector de la consulta para normalizar los pesos TF-IDF.
+
+4. **Cálculo de Similitud de Coseno**:
+   - Para cada término en la consulta, se busca en el índice invertido los documentos que contienen el término.
+   - Se calcula la similitud de coseno entre la consulta y cada documento relevante. Esto se hace multiplicando los pesos TF-IDF del término en la consulta y en el documento, y dividiendo por el producto de las normas de los vectores del documento y la consulta.
+
+5. **Ranking de Documentos**:
+   - Los documentos se ordenan en función de la similitud de coseno calculada, de mayor a menor.
+   - Se seleccionan los documentos con la mayor similitud para formar el Top-K resultados.
+
+6. **Presentación de Resultados**:
+   - Los documentos más relevantes se presentan al usuario, incluyendo información como el nombre de la pista, el artista y la similitud de coseno.
+   - Se muestra el tiempo total que tomó procesar la consulta.
+
+Este proceso garantiza que las consultas se ejecuten de manera eficiente y que los documentos más relevantes se recuperen y presenten rápidamente al usuario.
 
 ### Índice Invertido en PostgreSQL/MongoDB
 #### PostgreSQL

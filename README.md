@@ -1,5 +1,45 @@
 # Proyecto de Base de Datos 2 - Recuperación de Texto utilizando SPIMI INDEX
 
+## Índice
+
+- [Proyecto de Base de Datos 2 - Recuperación de Texto utilizando SPIMI INDEX](#proyecto-de-base-de-datos-2---recuperación-de-texto-utilizando-spimi-index)
+  - [Introducción](#introducción)
+    - [Objetivo del Proyecto](#objetivo-del-proyecto)
+    - [Descripción del Dominio de Datos y la Importancia de Aplicar Indexación](#descripción-del-dominio-de-datos-y-la-importancia-de-aplicar-indexación)
+  - [Backend: Índice Invertido](#backend-índice-invertido)
+    - [Construcción del Índice Invertido en Memoria Secundaria](#construcción-del-índice-invertido-en-memoria-secundaria)
+    - [Ejecución Óptima de Consultas Aplicando Similitud de Coseno](#ejecución-óptima-de-consultas-aplicando-similitud-de-coseno)
+  - [Índice Invertido en PostgreSQL](#índice-invertido-en-postgresql)
+    - [Creación de la Tabla](#creación-de-la-tabla)
+    - [Carga de Datos](#carga-de-datos)
+    - [Creación de Columnas para Vectores de Texto Ponderados](#creación-de-columnas-para-vectores-de-texto-ponderados)
+    - [Actualización de Columnas con Valores Ponderados](#actualización-de-columnas-con-valores-ponderados)
+    - [Creación del Índice GIN](#creación-del-índice-gin)
+    - [Consultas de Búsqueda de Texto Completo](#consultas-de-búsqueda-de-texto-completo)
+  - [Ejecución de Consultas en PostgreSQL](#ejecución-de-consultas-en-postgresql)
+  - [Frontend](#frontend)
+    - [Diseño de la GUI](#diseño-de-la-gui)
+      - [Al crear el índice invertido](#al-crear-el-índice-invertido)
+      - [Después de crear el índice invertido](#después-de-crear-el-índice-invertido)
+    - [Mini-manual de Usuario](#mini-manual-de-usuario)
+      - [Al crear el índice invertido](#al-crear-el-índice-invertido-1)
+      - [Al realizar una consulta](#al-realizar-una-consulta)
+    - [Screenshots de la GUI](#screenshots-de-la-gui)
+      - [Creación del Índice Invertido](#creación-del-índice-invertido)
+      - [Consulta de Texto Libre](#consulta-de-texto-libre)
+    - [Análisis Comparativo Visual con Otras Implementaciones](#análisis-comparativo-visual-con-otras-implementaciones)
+  - [Experimentación](#experimentación)
+    - [Tablas y Gráficos de los Resultados Experimentales](#tablas-y-gráficos-de-los-resultados-experimentales)
+      - [Tiempo de Creación del Índice Invertido](#tiempo-de-creación-del-índice-invertido)
+      - [Tiempo de Ejecución de Consultas (Top-K = 10)](#tiempo-de-ejecución-de-consultas-top-k--10)
+    - [Análisis y Discusión](#análisis-y-discusión)
+  - [Ejecución del Proyecto](#ejecución-del-proyecto)
+    - [Backend](#backend)
+    - [Frontend](#frontend)
+  - [Autores](#autores)
+  - [Referencias](#referencias)
+
+
 ## Introducción
 ### Objetivo del Proyecto
 El objetivo de este proyecto es implementar un sistema de recuperación de información utilizando un índice invertido basado en el modelo de recuperación por ranking para consultas de texto libre. Esto permite buscar y recuperar documentos relevantes a partir de una consulta en lenguaje natural, optimizando la búsqueda mediante la similitud de coseno y el cálculo de pesos TF-IDF.

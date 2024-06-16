@@ -11,6 +11,8 @@ El dataset utilizado proviene de Kaggle y contiene datos sobre canciones de Spot
 
 ### Construcción del Índice Invertido en Memoria Secundaria
 
+En base al algoritmo original propuesto por Manning, Raghavan y Schütze (2008), se implementó un índice invertido en memoria secundaria utilizando el algoritmo SPIMI (Single-Pass In-Memory Indexing). Este algoritmo divide el proceso de construcción del índice en dos fases principales: la fase de construcción de bloques y la fase de fusión de bloques.
+
 1. **Inicialización**:
    - Se carga el dataset que contiene las letras de las canciones y los metadatos de las mismas.
    - Se define el tamaño de los bloques, el directorio temporal para almacenar los índices parciales y el archivo final donde se guardará el índice invertido completo.
@@ -39,6 +41,8 @@ El dataset utilizado proviene de Kaggle y contiene datos sobre canciones de Spot
 7. **Índice Final**:
    - El índice invertido final, que contiene los términos, las listas de documentos asociados y las normas de los documentos, se guarda en un archivo en la memoria secundaria.
 
+![Índice Invertido en Memoria Secundaria](assets/algorithm.png)
+
 ### Ejecución Óptima de Consultas Aplicando Similitud de Coseno
 
 1. **Preprocesamiento de la Consulta**:
@@ -64,9 +68,91 @@ El dataset utilizado proviene de Kaggle y contiene datos sobre canciones de Spot
 
 Este proceso garantiza que las consultas se ejecuten de manera eficiente y que los documentos más relevantes se recuperen y presenten rápidamente al usuario.
 
-### Índice Invertido en PostgreSQL/MongoDB
-#### PostgreSQL
-- "COMPLETAR AQUI"
+### Índice Invertido en PostgreSQL
+
+PostgreSQL es una base de datos relacional que soporta capacidades avanzadas de búsqueda de texto completo mediante el uso de índices GIN (Generalized Inverted Index). A continuación se describe cómo se implementa un índice invertido en PostgreSQL y cómo se realiza la búsqueda de texto completo utilizando este índice:
+
+1. **Creación de la Tabla**:
+   - Se crea una tabla `songs` que almacena las canciones con sus respectivos metadatos y letras.
+   - Se definen las columnas necesarias para almacenar los datos.
+
+   ```sql
+   DROP TABLE IF EXISTS songs;
+   CREATE TABLE songs (
+       track_id TEXT PRIMARY KEY,
+       track_name TEXT,
+       track_artist TEXT NULL,
+       track_album_name TEXT,
+       lyrics TEXT
+   );
+   ```
+
+2. **Carga de Datos**:
+   - Se cargan los datos del archivo CSV a la tabla `songs`.
+
+   ```sql
+   COPY Public."songs" FROM 'PROYECTO-BD2/backend/csv/spotify_songs.csv' DELIMITER ',' CSV HEADER;
+   ```
+
+3. **Creación de Columnas para Vectores de Texto Ponderados**:
+   - Se añaden nuevas columnas `weighted_tsv` y `weighted_tsv2` a la tabla `songs` para almacenar los vectores de texto ponderados.
+
+   ```sql
+   ALTER TABLE songs ADD COLUMN weighted_tsv tsvector;
+   ALTER TABLE songs ADD COLUMN weighted_tsv2 tsvector;
+   ```
+
+4. **Actualización de Columnas con Valores Ponderados**:
+   - Se actualizan las columnas `weighted_tsv` y `weighted_tsv2` con valores ponderados usando las funciones `setweight` y `to_tsvector`. Estas funciones asignan pesos a diferentes partes del texto (por ejemplo, mayor peso a los nombres de las pistas y menor peso a las letras).
+
+   ```sql
+   UPDATE songs SET
+   weighted_tsv = x.weighted_tsv,
+   weighted_tsv2 = x.weighted_tsv
+   FROM (
+       SELECT track_id,
+       setweight(to_tsvector('english', COALESCE(track_name,'')), 'A') ||
+       setweight(to_tsvector('english', COALESCE(lyrics,'')), 'B')
+       AS weighted_tsv
+       FROM songs
+   ) AS x
+   WHERE x.track_id = songs.track_id;
+   ```
+
+5. **Creación del Índice GIN**:
+   - Se crea un índice GIN en la columna `weighted_tsv2` para optimizar las consultas de búsqueda de texto completo.
+
+   ```sql
+   CREATE INDEX weighted_tsv_idx1e3 ON songs USING GIN (weighted_tsv2);
+   ```
+
+6. **Consultas de Búsqueda de Texto Completo**:
+   - Se realizan consultas de búsqueda de texto completo utilizando el operador `@@` y la función `ts_rank_cd` para calcular la relevancia de los documentos.
+   - La consulta se ejecuta primero sin el índice para comparar el rendimiento, y luego con el índice para optimizar la búsqueda.
+
+   ```sql
+   -- Sin índice:
+   vacuum analyze;
+   EXPLAIN ANALYZE
+   SELECT track_id, track_name, ts_rank_cd(weighted_tsv, query) AS rank
+   FROM songs, to_tsquery('english', 'imagination') query
+   WHERE query @@ weighted_tsv
+   ORDER BY rank DESC
+   LIMIT 10;
+
+   -- Con índice:
+   ANALYZE songs;
+   SET enable_seqscan = OFF;
+   EXPLAIN ANALYZE
+   SELECT track_id, track_name, ts_rank_cd(weighted_tsv2, query) AS rank
+   FROM songs, to_tsquery('english', 'imagination') query
+   WHERE query @@ weighted_tsv2
+   ORDER BY rank DESC
+   LIMIT 10;
+   ```
+
+### Ejecución de Consultas en PostgreSQL
+En PostgreSQL, la búsqueda de texto completo se realiza utilizando el tipo de datos `tsvector` para almacenar documentos y el tipo de datos `tsquery` para consultas. El índice GIN optimiza estas consultas permitiendo una búsqueda rápida y eficiente. La función `ts_rank_cd` calcula una puntuación de relevancia basada en la posición y frecuencia de los términos de la consulta en los documentos. 
 
 ## Frontend
 
@@ -118,26 +204,30 @@ Se realizaron pruebas con diferentes tamaños de dataset (N = 1000, 2000, 4000, 
 
 | N     | SPIMI INDEX Time (ms) | PostgreSQL Time (ms) |
 |-------|-----------------------|----------------------|
-| 1000  | 0              | 0                    |
-| 2000  |  0            | 0                |
-| 4000  | 0             | 0                 |
-| 8000  | 0              | 0                |
-| 16000 | 0               | 0                 |
-| 25000 | 0               | 0                |
+| 1000  | 6881.005              | 745.129              |
+| 2000  | 12410.748             | 930.547              |
+| 4000  | 25872.752             | 1822.762             |
+| 8000  | 49830.521             | 4255.685             |
+| 16000 | 100109.318            | 8002.739             |
+| 25000 | 113356.787            | 9142.129             |
+
+![Gráfico de Tiempo de Creación del Índice Invertido](assets/grafico_1.png)
 
 #### Tiempo de Ejecución de Consultas (Top-K = 10)
 
-| N     | SPIMI INDEX Time (ms) | PostgreSQL Time (ms) |
-|-------|-----------------------|----------------------|
-| 1000  |  0                | 0                 |
-| 2000  |  0                | 0                |
-| 4000  | 0             | 0                 |
-| 8000  | 0              | 0                |
-| 16000 | 0               | 0                 |
-| 25000 | 0               | 0                |
+| N     | SPIMI INDEX (ms) | PostgreSQL sin índice (ms) | PostgreSQL con índice (ms) |
+|-------|------------------|----------------------------|----------------------------|
+| 1000  | 2.308            | 1.972                      |0.069|
+| 2000  | 2.201            | 3.568                      |0.119|
+| 4000  | 2.212            | 8.009                      |0.223|
+| 8000  | 2.001            | 13.858                     |0.456|
+| 16000 | 2.992            | 30.442                     |0.801|
+| 25000 | 2.941            | 34.457                     |1.436|
+
+![Gráfico de Tiempo de Ejecución de Consultas](assets/grafico_2.png)
 
 ### Análisis y Discusión
-(COMPLETAR AQUI)
+De acuerdo a los resultados obtenidos, se puede identificar que en cuanto al tiempo de creación del índice invertido, la implementación propia (SPIMI INDEX) tiende a ser mas lenta que la implementación con PostgreSQL. Esto es debido a que la implementación propia realiza un procesamiento más complejo y detallado de los datos, ya que para el análisis de los lyrics que se encuentran en el dataset, se realiza un preprocesamiento de los mismos, y para complementar, se hace un análisis del lenguaje previo para obtener resultados más relevantes y precisos al momento de hacer una consulta para devolver los resultados que, dependiendo del idioma de la consulta, se obtienen resultados más precisos. En cambio, la implementación con PostgreSQL, al no realizar un preprocesamiento de los datos, y no realizar un análisis del lenguaje, se obtienen resultados más rápidos, pero menos precisos. En cuanto al tiempo de ejecución de consultas, la implementación propia (SPIMI INDEX), al principio no es más rapida que la implementación de PostgreSQL, pero a medida que el dataset crece, la implementación propia tiende a mantener los mismos tiempos de ejecución, mientras que la implementación de PostgreSQL tiende a aumentar el tiempo de ejecución de las consultas a medida que el dataset crece. Esto se debe a que la implementación propia realiza un preprocesamiento de los datos, y un análisis del lenguaje, lo que permite obtener resultados más precisos y relevantes, mientras que la implementación de PostgreSQL, al no realizar un preprocesamiento de los datos, y no realizar un análisis del lenguaje, se obtienen resultados menos precisos y relevantes, lo que hace que el tiempo de ejecución de las consultas aumente a medida que el dataset crece. En ese caso, la implementación propia (SPIMI INDEX) es más eficiente y precisa que la implementación de PostgreSQL al momento de realizar consultas en un dataset grande, pero en un dataset pequeño, la implementación de PostgreSQL es más eficiente y precisa que la implementación propia (SPIMI INDEX).
 
 ## Ejecución del Proyecto
 
@@ -167,3 +257,8 @@ npm run dev
 |:------------:|:------------:|:------------:|:------------:|:------------:|
 | ![Benjamin Soto](https://avatars.githubusercontent.com/u/104233590?v=4) | ![Edgar Chambilla](https://avatars.githubusercontent.com/u/39739752?v=4) | ![Fabrizzio Vilchez](https://avatars.githubusercontent.com/u/115495332?v=4) | ![Ian Gonzales](https://avatars.githubusercontent.com/u/122047216?v=4) | ![Jeffrey Monja](https://avatars.githubusercontent.com/u/104637993?v=4) |
 | [https://github.com/SotoBenjamin](https://github.com/SotoBenjamin) | [https://github.com/Edgar5377](https://github.com/Edgar5377) | [https://github.com/Fabrizzio20k](https://github.com/Fabrizzio20k) | [https://github.com/mukanjy0](https://github.com/mukanjy0) | [https://github.com/jeffreymonjacastro](https://github.com/jeffreymonjacastro) |
+
+
+
+## Referencias
+Manning, C. D., Raghavan, P., & Schütze, H. (2008). *Introduction to Information Retrieval*. Cambridge University Press. Retrieved from https://nlp.stanford.edu/IR-book/html/htmledition/single-pass-in-memory-indexing-1.html

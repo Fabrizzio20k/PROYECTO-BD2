@@ -9,7 +9,7 @@ CREATE TABLE songs (
 	lyrics TEXT
 );
 
-COPY Public."songs" FROM '/Users/edgarchambilla/Desktop/UTEC_CODE/BD/PROYECTO-BD2/backend/csv/spotify_songs_1000.csv' DELIMITER ',' CSV HEADER;
+COPY Public."songs" FROM 'C:/Users/vilch/OneDrive/Escritorio/PROYECTO-BD2/backend/csv/spotify_songs.csv' DELIMITER ',' CSV HEADER;
 
 select * from songs
 
@@ -54,7 +54,7 @@ SELECT track_id, track_name, ts_rank_cd(weighted_tsv2, query) AS rank
 FROM songs, to_tsquery('english', 'imagination') query
 WHERE query @@ weighted_tsv2
 ORDER BY rank DESC
-LIMIT 20;
+LIMIT 10;
 
 
 

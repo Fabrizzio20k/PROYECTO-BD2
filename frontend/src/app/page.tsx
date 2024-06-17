@@ -8,6 +8,7 @@ import { Toaster, toast } from 'sonner';
 import IndexCreation from '@/types/IndexCreation';
 import SearchData from '@/interfaces/SearchData';
 import Song from '@/types/Song';
+import "./styles.css";
 
 const api = "http://localhost:8000/";
 
@@ -129,7 +130,7 @@ export default function Page() {
                     </div>
                 )}
                 {createdIndex && (
-                    <div className="bg-gray-800 p-8 rounded shadow-md w-full md:w-1/2">
+                    <div className="bg-gray-800 p-8 rounded shadow-md w-full md:w-1/2 md:overflow-y-auto custom-scrollbar">
                         <h1 className="text-2xl font-bold mb-6 text-center">Search your favorite songs 🎵</h1>
                         <form onSubmit={handleSearchSubmit(handleSearch)}>
                             <div className="mb-4">
@@ -193,14 +194,14 @@ export default function Page() {
                         </form>
                     </div>
                 )}
-                <div className="bg-gray-800 p-8 rounded shadow-md w-full md:w-1/2">
+                <div className="bg-gray-800 p-8 rounded shadow-md w-full md:w-1/2 md:overflow-y-auto custom-scrollbar">
                     {!createdIndex && (
                         <div className='h-full flex justify-center items-center'>
                             <h1 className="text-2xl font-bold mb-6 text-center">Why not create an index first? 🦎</h1>
                         </div>
                     )}
                     {createdIndex && (
-                        <div className="overflow-y-auto h-full">
+                        <div>
                             <h1 className="text-2xl font-bold mb-6 text-center">Search Results</h1>
                             <div className="grid grid-cols-1 gap-4">
                                 {songs.map((song, index) => (

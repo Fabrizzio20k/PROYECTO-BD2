@@ -1,0 +1,40 @@
+/* styles/styles.css */
+
+.custom-scrollbar {
+    scrollbar-width: thin;
+    /* Para Firefox */
+    scrollbar-color: #6B7280 transparent;
+    /* Color del thumb y del track para Firefox */
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #6B7280;
+    /* Color plomo */
+    border-radius: 10px;
+    /* Bordes redondeados */
+    border: 2px solid transparent;
+    /* Espacio entre thumb y track */
+    background-clip: content-box;
+    /* Hace que el borde sea visible */
+    transition: background-color 0.3s ease;
+    /* Transición suave para el color */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background-color: transparent;
+    /* Background transparente */
+}
+
+.custom-scrollbar:hover::-webkit-scrollbar-thumb {
+    background-color: #4B5563;
+    /* Cambio de color al pasar el mouse */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: #374151;
+    /* Cambio de color al pasar el mouse por el thumb */
+}

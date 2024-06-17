@@ -65,20 +65,17 @@ En base al algoritmo original propuesto por Manning, Raghavan y Schütze (2008),
 3. **Procesamiento en Bloques**:
    - Los documentos se procesan en bloques de un tamaño predefinido.
    - Para cada bloque, se crea un diccionario temporal donde cada término (palabra) se asocia con una lista de documentos en los que aparece junto con su frecuencia de aparición.
-
-4. **Cálculo de Normas de Documentos**:
-   - Para cada documento, se calcula la norma (longitud) del documento sumando los cuadrados de las frecuencias de los términos y tomando la raíz cuadrada del resultado.
-
-5. **Almacenamiento Temporal**:
+     
+4. **Almacenamiento Temporal**:
    - Cada bloque procesado se guarda como un archivo temporal en el directorio designado.
    - Los archivos temporales contienen el diccionario de términos y las normas de los documentos correspondientes al bloque.
 
-6. **Fusión de Bloques**:
+5. **Fusión de Bloques**:
    - Los archivos temporales se cargan y se fusionan en un solo índice invertido.
    - Se utiliza una estructura de datos de tipo heap para ordenar y combinar las listas de postings de cada término de los diferentes bloques.
-   - Las normas de los documentos también se combinan y se recalculan si es necesario.
+   - Las normas de los documentos se calculan al final de todo por unica vez antes de terminar el merge.
 
-7. **Índice Final**:
+6. **Índice Final**:
    - El índice invertido final, que contiene los términos, las listas de documentos asociados y las normas de los documentos, se guarda en un archivo en la memoria secundaria.
 
 ![Índice Invertido en Memoria Secundaria](assets/algorithm.png)

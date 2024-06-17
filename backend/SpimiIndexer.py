@@ -69,10 +69,7 @@ class SPIMIIndexer:
 
                 for term, freq in term_freq.items():
                     dictionary[term].append((i + doc_id, freq))
-                    doc_norms[i + doc_id] += (freq ** 2)
-
-            for doc_id in doc_norms:
-                doc_norms[doc_id] = np.sqrt(doc_norms[doc_id])
+                    doc_norms[i + doc_id] += (freq ** 2)  # Suma de los cuadrados de las frecuencias
 
             # Guardar el bloque en un archivo temporal
             block_path = os.path.join(self.temp_dir, f'block_{block_id}.pkl')
@@ -95,17 +92,14 @@ class SPIMIIndexer:
                     for posting in postings:
                         heapq.heappush(heap, (term, posting))
                 for doc_id, norm in block_doc_norms.items():
-                    if doc_id in doc_norms:
-                        doc_norms[doc_id] += norm ** 2
-                    else:
-                        doc_norms[doc_id] = norm ** 2
+                    doc_norms[doc_id] += norm  # Acumula los cuadrados de las normas
 
         while heap:
             term, posting = heapq.heappop(heap)
             term_postings[term].append(posting)
 
         for doc_id in doc_norms:
-            doc_norms[doc_id] = np.sqrt(doc_norms[doc_id])
+            doc_norms[doc_id] = np.sqrt(doc_norms[doc_id])  # Calcula la raíz cuadrada al final
 
         # Guardar el índice final en un archivo
         with open(self.final_index_file, 'wb') as f:

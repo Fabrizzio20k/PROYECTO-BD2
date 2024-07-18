@@ -1,5 +1,5 @@
 from SpimiIndexer import SPIMIIndexer
-from    fastapi import FastAPI
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import time
 
@@ -14,8 +14,7 @@ app.add_middleware(
 )
 
 indexer = None
-posible_extra_features = ["track_artist", "lyrics", "track_popularity", "track_album_id", "track_album_name", "track_album_release_date", "playlist_name", "playlist_id", "playlist_genre",
-                          "playlist_subgenre", "danceability", "energy", "key", "loudness", "mode", "speechiness", "acousticness", "instrumentalness", "liveness", "valence", "tempo", "duration_ms", "language"]
+posible_extra_features = ["track_artist", "lyrics", "track_popularity", "track_album_id", "track_album_name", "track_album_release_date", "playlist_name", "playlist_id", "playlist_genre", "playlist_subgenre", "danceability", "energy", "key", "loudness", "mode", "speechiness", "acousticness", "instrumentalness", "liveness", "valence", "tempo", "duration_ms", "language"]
 
 
 @app.get("/")
@@ -24,9 +23,11 @@ def read_root():
 
 
 @app.post("/create_index")
-# receive it in a json format
 def create_index(data: dict):
-    # create the index
+    """
+    Recibe un json y retorna el tiempo de ejecución
+    """
+
     if 'csv_path' not in data:
         return {"message": "csv_path is required"}
     if 'block_size' not in data:
@@ -42,6 +43,10 @@ def create_index(data: dict):
 
 @app.post("/search")
 def search(data: dict):
+    """
+    Recibe un json con el string (query), el número k y los extra features
+    """
+
     extra_features = None
 
     if indexer is None:

@@ -17,19 +17,19 @@ nltk.download('stopwords')
 
 class SPIMIIndexer:
     def __init__(self, csv_path, block_size=5000, temp_dir='temp_blocks', final_index_file='final_index.pkl'):
-        # Leer el archivo CSV
+        # Lee el archivo CSV
         self.df = pd.read_csv(csv_path)
-        # Obtener las letras de las canciones
+        # Extrae las letras de las canciones
         self.lyrics = self.df['lyrics'].fillna('').tolist()
-        # Obtener metadatos de las canciones
-        self.song_metadata = self.df[[
-            'track_name', 'track_artist', 'track_album_name']].to_dict('records')
+        # Obtiene los metadatos de las canciones
+        self.song_metadata = self.df[['track_name', 'track_artist', 'track_album_name']].to_dict('records')
+        # Asigna el tamaño del bloque y el directorio temporal
         self.block_size = block_size
         self.temp_dir = temp_dir
         self.final_index_file = final_index_file
+        # Tamaño del corpus
         self.num_docs = len(self.lyrics)
-        self.stop_words = set(stopwords.words('spanish')).union(
-            set(stopwords.words('english')))
+        self.stop_words = set(stopwords.words('spanish')).union(set(stopwords.words('english')))
 
         # Crear el directorio temporal si no existe
         if not os.path.exists(self.temp_dir):
@@ -41,7 +41,12 @@ class SPIMIIndexer:
         self.__cleanup_temp_files()
 
     def preprocess(self, text):
-        # Tokenización, eliminación de stopwords y stemming considerando el idioma. a veces el text es vacio ""
+        """
+        Recibe las letras de una canción y devuelve una lista de tokens preprocesados.
+        Realiza la tokenización, eliminación de stopwords y stemming considerando el idioma.
+        Si el text vacio ("") no retorna nada
+        """
+
         if text == "" or text == None:
             return []
         else:
@@ -56,6 +61,16 @@ class SPIMIIndexer:
         return filtered_tokens
 
     def spimi_invert(self):
+        """
+        Preprocesa los documentos (letras de canciones) por bloques.
+
+        Retorna dos diccionarios:
+        * dictionary -> key: un término tokenizado, value: un pair (doc_id, freq)
+        * doc_norms -> key: doc_id, value: suma de las frecuencias al cuadrado de cada term
+
+        Crea temporalmente un conjunto de archivos temporales .pkl con los dos diccionarios de cada documento
+        """
+
         block_id = 0
         # Procesar los documentos en bloques
         for i in range(0, len(self.lyrics), self.block_size):
@@ -69,7 +84,8 @@ class SPIMIIndexer:
 
                 for term, freq in term_freq.items():
                     dictionary[term].append((i + doc_id, freq))
-                    doc_norms[i + doc_id] += (freq ** 2)  # Suma de los cuadrados de las frecuencias
+                    # Suma de los cuadrados de las frecuencias
+                    doc_norms[i + doc_id] += (freq ** 2)  
 
             # Guardar el bloque en un archivo temporal
             block_path = os.path.join(self.temp_dir, f'block_{block_id}.pkl')
@@ -79,8 +95,15 @@ class SPIMIIndexer:
             block_id += 1
 
     def __merge_blocks(self):
-        block_files = [os.path.join(self.temp_dir, f)
-                       for f in os.listdir(self.temp_dir)]
+        """
+        Recorre todos los archivos temporales .pkl los mergea con un minheap.
+
+        El heap almacena tuplas = (term, posting), donde posting = (doc_id, freq)
+
+        Guarda los dos diccionarios con los términos y normas de todos los bloques
+        """
+
+        block_files = [os.path.join(self.temp_dir, f) for f in os.listdir(self.temp_dir)]
         heap = []
         term_postings = defaultdict(list)
         doc_norms = defaultdict(float)
@@ -109,18 +132,27 @@ class SPIMIIndexer:
         self.doc_norms = doc_norms
 
     def __cleanup_temp_files(self):
-        # Eliminar los archivos temporales
+        """
+        Limpia los archivos temporales
+        """
+
         for block_file in os.listdir(self.temp_dir):
             os.remove(os.path.join(self.temp_dir, block_file))
         os.rmdir(self.temp_dir)
 
     def load_final_index(self):
-        # Cargar el índice final desde el archivo
+        """
+        Cargar el índice final desde el archivo
+        """
+
         with open(self.final_index_file, 'rb') as f:
             self.dictionary, self.doc_norms = pickle.load(f)
 
     def compute_tfidf(self, term, doc_id):
-        # Calcular el peso TF-IDF para un término en un documento
+        """
+        Calcular el peso TF-IDF para un término en un documento
+        """
+        
         term_postings = self.dictionary.get(term, [])
         doc_freq = len(term_postings)
         tf = next((freq for doc, freq in term_postings if doc == doc_id), 0)
@@ -128,6 +160,10 @@ class SPIMIIndexer:
         return tf * idf
 
     def cosine_similarity(self, query):
+        """
+        Recibe una query y retorna un diccionario con la similitud de cada término
+        """
+
         # Preprocesar la consulta
         query_tokens = self.preprocess(query)
         query_vector = Counter(query_tokens)
@@ -160,6 +196,11 @@ class SPIMIIndexer:
         return scores
 
     def retrieve_top_k(self, query, k=5, additional_features=None):
+        """
+        Ejecuta la función cosine_similarity y halla los primeros k documentos con mejor score. 
+        Retornar un diccionario con el tiempo total de la consulta y los resultados
+        """
+
         if additional_features is None:
             additional_features = []
 
@@ -186,7 +227,6 @@ class SPIMIIndexer:
 
         end_time = time.time()
 
-        # Retornar un diccionario con el tiempo total de la consulta y los resultados
         return {
             'query_time': end_time - start_time,
             'results': results

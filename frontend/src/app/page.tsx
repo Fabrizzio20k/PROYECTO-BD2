@@ -183,6 +183,12 @@ export default function Page() {
                                 >
                                     Search
                                 </button>
+                                <button
+                                    className="inline-flex justify-center py-2 px-4 ml-3 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                    onClick={() => window.location.reload()}
+                                >
+                                    Change CSV
+                                </button>
                             </div>
                             {executionTime > 0 && (
                                 <div className="mt-4 p-4 bg-gray-950 rounded-md shadow-inner text-gray-300">

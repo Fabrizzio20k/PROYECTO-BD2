@@ -235,7 +235,7 @@ Comparación visual del rendimiento y precisión entre la implementación propia
 ## Experimentación
 
 ### Tablas y Gráficos de los Resultados Experimentales
-Se realizaron pruebas con diferentes tamaños de dataset (N = 1000, 2000, 4000, 8000, 16000, 25000). A continuación se presentan las tablas y gráficos con los resultados obtenidos.
+Se realizaron pruebas con diferentes tamaños de dataset (N = 1000, 2000, 4000, 8000, 16000, 25000). A continuación se presentan las tablas y gráficos con los resultados obtenidos. Se puede probar desde el siguiente link: http://image-simulator.s3-website-us-east-1.amazonaws.com/
 
 #### Tiempo de Creación del Índice Invertido
 
